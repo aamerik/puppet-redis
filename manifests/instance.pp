@@ -364,8 +364,8 @@ define redis::instance (
       active  => $real_service_ensure,
       enable  => $real_service_enable,
       owner   => 'root',
-      group   => 'root',
-      mode    => '0644',
+      group   => $service_group,
+      mode    => '0640',
       content => template('redis/service_templates/redis.service.erb'),
     }
   } else {
