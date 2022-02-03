@@ -90,17 +90,23 @@ CONFIG
 
         let(:params) do
           {
-            auth_pass: 'password',
+            sentinel_monitors: {
+              'mymaster' => {
+                'redis_host'             => '127.0.0.1',
+                'redis_port'             => 6379,
+                'quorum'                 => 2,
+                'parallel_sync'          => 1,
+                'auth_pass'              => 'password',
+                'down_after'             => 6000,
+                'failover_timeout'       => 28_000,
+                'notification_script'    => '/path/to/bar.sh',
+                'client_reconfig_script' => '/path/to/foo.sh',
+              },
+            },
             sentinel_bind: '192.0.2.10',
             protected_mode: false,
-            master_name: 'cow',
-            down_after: 6000,
             working_dir: '/tmp/redis',
-            log_file: '/tmp/barn-sentinel.log',
-            failover_timeout: 28_000,
-            notification_script: '/path/to/bar.sh',
-            client_reconfig_script: '/path/to/foo.sh',
-            package_ensure: 'latest'
+            log_file: '/tmp/barn-sentinel.log'
           }
         end
 
@@ -111,15 +117,14 @@ port 26379
 dir /tmp/redis
 daemonize #{facts[:osfamily] == 'RedHat' ? 'no' : 'yes'}
 pidfile #{pidfile}
-protected-mode no
-
-sentinel monitor cow 127.0.0.1 6379 2
-sentinel down-after-milliseconds cow 6000
-sentinel parallel-syncs cow 1
-sentinel failover-timeout cow 28000
-sentinel auth-pass cow password
-sentinel notification-script cow /path/to/bar.sh
-sentinel client-reconfig-script cow /path/to/foo.sh
+#{protected_mode ? "protected-mode no\n" : ''}
+sentinel monitor mymaster 127.0.0.1 6379 2
+sentinel down-after-milliseconds mymaster 6000
+sentinel parallel-syncs mymaster 1
+sentinel failover-timeout mymaster 28000
+sentinel auth-pass mymaster password
+sentinel notification-script mymaster /path/to/bar.sh
+sentinel client-reconfig-script mymaster /path/to/foo.sh
 
 loglevel notice
 logfile /tmp/barn-sentinel.log
@@ -136,15 +141,22 @@ CONFIG
       describe 'with array sentinel bind' do
         let(:params) do
           {
-            auth_pass: 'password',
+            sentinel_monitors: {
+              'cow' => {
+                'redis_host'             => '127.0.0.1',
+                'redis_port'             => 6379,
+                'quorum'                 => 2,
+                'parallel_sync'          => 1,
+                'auth_pass'              => 'password',
+                'down_after'             => 6000,
+                'failover_timeout'       => 28_000,
+                'notification_script'    => '/path/to/bar.sh',
+                'client_reconfig_script' => '/path/to/foo.sh',
+              },
+            },
             sentinel_bind: ['192.0.2.10', '192.168.1.1'],
-            master_name: 'cow',
-            down_after: 6000,
             working_dir: '/tmp/redis',
-            log_file: '/tmp/barn-sentinel.log',
-            failover_timeout: 28_000,
-            notification_script: '/path/to/bar.sh',
-            client_reconfig_script: '/path/to/foo.sh'
+            log_file: '/tmp/barn-sentinel.log'
           }
         end
 
